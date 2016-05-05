@@ -7,7 +7,6 @@
 import logging
 from datetime import datetime
 from pathlib import Path # python 3.4 or later
-from itertools import chain
 import sys
 #
 # 3rd-party modules
@@ -15,10 +14,10 @@ import sys
 import yaml
 import click
 
-try:
-    from .version import version as __version__ # noqa
-except ImportError:
-    __version__ = 'devel'
+#
+# module version--kept in its own file for setup.py
+#
+from .version import version as __version__ # noqa
 #
 # global constants
 #
@@ -36,14 +35,94 @@ VERSION = __version__
 STARTTIME = datetime.now()
 ROOT_METADATA_FILE_ENVVAR = 'META_IRON_ROOT_METADATA_FILE_PATH'
 #
+# Every root or node metadata file will have these attributes set at creation time.
+#
+REQUIRED_DIRECTORY_ATTRIBUTES = {
+                                'meta_iron_version': VERSION,
+                                'version': '',
+                                'children': [],
+                                'files': [],
+                                'type': '',
+                                'alias': '',
+                                'depth': 0
+                                }
+#
+# Dictionary of known node types with mandatory attributes for that type.
+# These inherit hierarchically, and may be overridden at any lower point.
+#
+DIRECTORY_TYPES = {'root': {'root_version': '',
+                            'root_url': '',
+                            'root_name': '',
+                            'root_code': '',
+                            'curator': '',
+                            'curator_url': '',
+                            'temp': False,
+                            'upload': True,
+                            'alias_start_level': 1
+                            },
+                   'log': {'temp': True,
+                           'upload': False
+                           },
+                   'temp': {'temp': True,
+                            'upload': False
+                            },
+                   'bin': {'executable': True
+                           },
+                   'common': {'name': 'Legumes'
+                              },
+                   'species':{'name': '',
+                              'common_name': '',
+                              'code': '',
+                              'genome_size_Mbp': 0.0,
+                              'taxon_id': 0
+                              },
+                   'organism':{'reference_url': '',
+                               'organism_name': '',
+                               'organism_code': '',
+                               'organism_desc': ''
+                               },
+                   'genome':{'assemblies': []
+                             },
+                   'genomic_reads':{'read_files': []
+                                    },
+                   'assembly':{'total_assembly_size_bp': 0,
+                               'assembly_files': [],
+                               'annotation_dirs': []
+                               },
+                   'annotation':{'feature_files':[]
+                                 },
+                   'transcriptome':{'transcriptome_files':[],
+                                    'columnar_metadata_file': ''
+                                    }
+}
+#
+# Every file is required to have these attributes set
+#
+REQUIRED_FILE_ATTRIBUTES = {'file_size': 0,
+                            'file_mod_timestamp': '',
+                            'file_compression': '',
+                            'file_type': ''
+                            }
+#
+# Dictionary of known file types.
+#
+FILE_TYPES = {'assembly': {'assembly_size', 0
+                           },
+              'reads': {'n_reads':0,
+                        'basepairs':0
+                        },
+              'feature': {'n_features':0
+                           }
+              }
+#
 # global logger object
 #
-logger = logging.getLogger(PROGRAM_NAME)
+logger = logging.getLogger('meta_iron')
 #
 # Class definitions begin here.
 #
-class PersistentMetadataObject(object):
-    '''Defines a persistent metadata object
+class HierarchicalMetadataObject(object):
+    '''Defines a hierarchical persistent metadata object
 
     Attributes:
         :metadata_dict: Dictionary of metadata parameters.
@@ -51,7 +130,7 @@ class PersistentMetadataObject(object):
         :path: metadata filepath (absolute).
     '''
     def __init__(self, metadata_dir=None, name='node_metadata.yaml'):
-        '''Inits the metadata dictionary
+        '''Initialize a node metadata dictionary
 
         Reads a metadata file from a subdirectory of the
         current working directory.  If that file isn't found,
@@ -59,28 +138,19 @@ class PersistentMetadataObject(object):
         If that file isn't found either, creates a new file in the
         directory specified by the location parameter.
         '''
-        self.name = name
-        self._default_dict = {'meta_iron_version': VERSION,
-                              'children': [],
-                              }
-
-        self._default_path = Path((click.get_app_dir(PROGRAM_NAME)+'/' + self.name))
-        self._cwd_path = Path ('.' + '/.' + PROGRAM_NAME + '/' + self.name)
-        if metadata_dir is not None:
-            self.path = self._get_path_from_dir(metadata_dir)
-        elif self._cwd_path.is_file():
-            self.path = self._cwd_path
+        self.type = type
+        if self.type == 'root':
+            self.name = 'root_metadata.yaml'
         else:
-            self.path = self._default_path
+            self.name = 'node_metadata.yaml'
+
+        self.path = Path (self.name)
         if not self.path.exists():
             self.metadata_dict = {}
             self.path = None
         else:
             with self.path.open('rt') as f:
                 self.metadata_dict = yaml.safe_load(f)
-
-    def _get_path_from_dir(self, dir):
-        return Path(str(dir) + '/.' + PROGRAM_NAME +'/' + self.name).expanduser()
 
     def _update_metadata_dict(self):
         '''Update metadata dictionary if necessary
@@ -98,39 +168,17 @@ class PersistentMetadataObject(object):
             self.metadata_dict = self._default_dict
 
 
-    def write_metadata_dict(self, metadata_dict=None, dir=None):
+    def write_metadata_dict(self, metadata_dict=None):
         '''Writes a YAML metadata dictionary
         :param metadata_dict: metadata dictionary
         :return: None
         '''
-        if dir is None or dir is '':
-            if self.path is None:
-                self.path = self._default_path
-        elif dir is '.':
-            self.path = self._cwd_path
-        else:
-            self.path = self._get_path_from_dir(dir)
-
         if metadata_dict == {}:
             self.metadata_dict = self._default_dict
         elif metadata_dict is not None and metadata_dict != self.metadata_dict:
                 self.metadata_dict = metadata_dict
                 self._update_metadata_dict()
 
-        if not self.path.parent.exists():
-            # create parent directory
-            logger.debug('Creating metadata file directory "%s"',
-                          self.path.parent)
-            try:
-                self.path.parent.mkdir(parents=True)
-            except OSError:
-                logger.error('Unable to create parent directory "%s".',
-                             self.path.parent)
-                sys.exit(1)
-        if not self.path.parent.is_dir():
-            logger.error('Path "%s" exists, but is not a directory.',
-                         self.path.parent)
-            sys.exit(1)
         if not self.path.exists():
             logger.debug('Creating metadata file "%s"', self.path)
             try:
@@ -140,7 +188,6 @@ class PersistentMetadataObject(object):
                 sys.exit(1)
         with self.path.open(mode='wt') as f:
             yaml.dump(self.metadata_dict, f)
-metadata_obj = PersistentmetadataObject()
 
 #
 # helper functions called by multiple cli functions
