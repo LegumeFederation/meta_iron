@@ -34,6 +34,9 @@ DEFAULT_STDERR_LOGLEVEL = logging.INFO
 VERSION = __version__
 STARTTIME = datetime.now()
 ROOT_METADATA_FILE_ENVVAR = 'META_IRON_ROOT_METADATA_FILE_PATH'
+
+ROOT_METADATA_FILE_PATTERN = 'root_metadata*.yaml'
+NODE_METADATA_FILE_PATTERN = 'node_metadata*.yaml'
 #
 # Every root or node metadata file will have these attributes set at creation time.
 #
@@ -138,21 +141,79 @@ class HierarchicalMetadataObject(object):
         If that file isn't found either, creates a new file in the
         directory specified by the location parameter.
         '''
-        self.type = type
-        if self.type == 'root':
-            self.name = 'root_metadata.yaml'
+        metadata_path_list, self.rooted = self._check_for_metadata('.')
+        metadata_dict_list = []
+        self.flattened_metadata = {}
+        self.node_metadata = {}
+        for path in metadata_path_list:
+            with path.open('rt') as f:
+                try:
+                    metadata_dict_list.append(yaml.safe_load(f))
+                except:
+                    logger.error('Corrupt metadata file at "%s".',
+                                 path)
+                    sys.exit(1)
+        if len(metadata_dict_list) == 0:
+            self.metadata_found = False
+            logger.debug('No metadata file found in "%s".',
+                         str(Path('.').resolve()))
+            self.node_metadata = {}
+            self.flattened_metadata = {}
+            self.node_metadata_path = None
+            self.node_depth = None
         else:
-            self.name = 'node_metadata.yaml'
-
-        self.path = Path (self.name)
-        if not self.path.exists():
-            self.metadata_dict = {}
-            self.path = None
+            self.metadata_found = True
+            self.node_metadata_path = metadata_path_list[-1]
+            self.node_metadata = metadata_dict_list[-1]
+            self.node_depth = len(metadata_path_list)
+            #flatten metadata
+        if self.rooted:
+            self.root_metadata = metadata_dict_list[0]
+            self.root_metadata_path = metadata_path_list[0]
+            logger.debug('Root metadata found at "%s".',
+                         self.root_metadata_path)
         else:
-            with self.path.open('rt') as f:
-                self.metadata_dict = yaml.safe_load(f)
+            self.root_metadata = None
+            if self.metadata_found:
+                logger.debug('No root metadata file found.')
 
-    def _update_metadata_dict(self):
+    def __str__(self):
+        desc = 'Hierarchical Metadata object, version %s\n' %VERSION
+        if self.rooted:
+            desc += 'Rooted at "%s".\n' %self.root_metadata_path
+        return desc
+
+    def _check_for_metadata(self,
+                            search_path='.',
+                            path_list=[]):
+        '''Recursively check upwards for metadata files
+        '''
+        root_found = False
+        root_list = list(Path(search_path).glob(ROOT_METADATA_FILE_PATTERN))
+        if len(root_list) > 1:
+            logger.error('More than one root metadata file was found in "%s".',
+                         Path(search_path))
+            sys.exit(1)
+        elif len(root_list) == 1:
+            path_list += root_list
+            root_found = True
+        else: # not at the root, iterate upwards
+            node_list = list(Path(search_path).glob(NODE_METADATA_FILE_PATTERN))
+            if len(node_list)>1:
+                logger.error('More than one node metadata file was found in "%s".',
+                             Path(search_path))
+                sys.exit(1)
+            elif len(node_list) == 1:
+                if search_path == '.':
+                    recurse_path = '..'
+                else:
+                    recurse_path = search_path+'/..'
+                path_list, root_found = self._check_for_metadata(search_path=recurse_path,
+                                         path_list=path_list)
+                path_list += node_list
+        return (path_list, root_found)
+
+    def _update_node_metadata_dict(self):
         '''Update metadata dictionary if necessary
         :param metadata_dict: metadata dictionary.
         :return: Updated metadata dictionary.
@@ -168,7 +229,7 @@ class HierarchicalMetadataObject(object):
             self.metadata_dict = self._default_dict
 
 
-    def write_metadata_dict(self, metadata_dict=None):
+    def write_node_metadata_dict(self, metadata_dict=None):
         '''Writes a YAML metadata dictionary
         :param metadata_dict: metadata dictionary
         :return: None

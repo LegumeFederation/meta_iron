@@ -25,7 +25,9 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=['click>=5.0',
-                      'click_plugins'],
+                      'click_plugins',
+                      'pyyaml',
+                      'pandas'],
     entry_points={
                  'console_scripts':['meta_iron = meta_iron:cli']
                 },
