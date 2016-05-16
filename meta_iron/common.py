@@ -8,6 +8,8 @@ import logging
 from datetime import datetime
 from pathlib import Path # python 3.4 or later
 import sys
+import os
+import collections
 #
 # 3rd-party modules
 #
@@ -141,11 +143,12 @@ class HierarchicalMetadataObject(object):
         If that file isn't found either, creates a new file in the
         directory specified by the location parameter.
         '''
-        metadata_path_list, self.rooted = self._check_for_metadata('.')
+        self.path_list, self.rooted = self._check_for_metadata('.')
         metadata_dict_list = []
-        self.flattened_metadata = {}
+        self.metadata = {}
         self.node_metadata = {}
-        for path in metadata_path_list:
+        self.node_dir = os.getcwd()
+        for path in self.path_list:
             with path.open('rt') as f:
                 try:
                     metadata_dict_list.append(yaml.safe_load(f))
@@ -157,31 +160,88 @@ class HierarchicalMetadataObject(object):
             self.metadata_found = False
             logger.debug('No metadata file found in "%s".',
                          str(Path('.').resolve()))
-            self.node_metadata = {}
-            self.flattened_metadata = {}
-            self.node_metadata_path = None
+            self.metadata = {}
+            self.source = {}
             self.node_depth = None
         else:
             self.metadata_found = True
-            self.node_metadata_path = metadata_path_list[-1]
-            self.node_metadata = metadata_dict_list[-1]
-            self.node_depth = len(metadata_path_list)
-            #flatten metadata
+            self.node_depth = len(self.path_list)-1
+            self.metadata = {}
+            self.source = {}
+            for i in range(len(metadata_dict_list)):
+                (self.metadata,
+                self.source) = self._recursive_overlay(self.metadata,
+                                                        metadata_dict_list[i],
+                                                        self.source,
+                                                        str(self.path_list[i]))
+            if 'meta' in self.source: # don't track meta-metadata source
+                del self.source['meta']
         if self.rooted:
-            self.root_metadata = metadata_dict_list[0]
-            self.root_metadata_path = metadata_path_list[0]
             logger.debug('Root metadata found at "%s".',
-                         self.root_metadata_path)
+                         self.path_list[0])
         else:
-            self.root_metadata = None
             if self.metadata_found:
                 logger.debug('No root metadata file found.')
+        for key in self.metadata.keys():
+
 
     def __str__(self):
         desc = 'Hierarchical Metadata object, version %s\n' %VERSION
+        #desc += '%s\n'%self.metadata
+        #desc += 'meta%s\n'%self.metadata['meta']
+        #desc += '%s\n'%self.source
         if self.rooted:
-            desc += 'Rooted at "%s".\n' %self.root_metadata_path
+            top_desc = 'root'
+        else:
+            top_desc = 'unrooted top'
+        if self.node_depth == 1:
+            level_plural = ''
+        else:
+            level_plural = 's'
+        desc += 'Node "%s" is %d level%s deep from %s ' %(self.node_dir,
+                                                          self.node_depth,
+                                                          level_plural,
+                                                          top_desc)
+        desc += 'at "%s".\n' %self.path_list[0]
+        desc += '    Name        Value [Units]   Source\n'
+        for k,v in sorted(self.metadata.items()):
+            if k != 'meta':
+                try:
+                    units = ' '+ self.metadata['meta'][k]['units']
+                except KeyError:
+                    units = ''
+                try:
+                    key_desc = self.metadata['meta'][k]['desc']
+                except KeyError:
+                    key_desc = k
+                desc += ' %s  %s%s  %s\n'%(key_desc,
+                                           v,
+                                           units,
+                                           self.source[k])
         return desc
+
+
+    def _recursive_overlay(self,
+                           dict_element,
+                           possible_map,
+                           source_dict,
+                           source):
+        if isinstance(possible_map, collections.MutableMapping):
+            for k, v in possible_map.items():
+                if k not in dict_element:
+                    dict_element[k] = {}
+                if k not in source_dict:
+                    source_dict[k] = {}
+                (dict_element[k],
+                     source_dict[k]) = self._recursive_overlay(dict_element[k],
+                                                               v,
+                                                               source_dict[k],
+                                                               source)
+        else: # not a map
+            dict_element = possible_map
+            source_dict = source
+        return dict_element, source_dict
+
 
     def _check_for_metadata(self,
                             search_path='.',

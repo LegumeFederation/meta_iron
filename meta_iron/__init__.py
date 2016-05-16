@@ -232,9 +232,19 @@ def show_context_object():
     '''Prints the global context object.
     '''
     user_ctx = get_user_context_obj()
-    logger.info('User context object')
+    logger.info('User context object, not including metadata')
     for key in user_ctx.keys():
-        logger.info('   %s: %s', key, user_ctx[key])
+        if key != 'metadata_obj':
+            logger.info('   %s: %s', key, user_ctx[key])
+
+@cli.command()
+def show_metadata():
+    '''Prints metadata from the current context.
+    '''
+    metadata_obj = get_user_context_obj()['metadata_obj']
+    logger.info('User context object')
+    logger.info(metadata_obj)
+
 
 #import other cli functions
 from .directory import *
