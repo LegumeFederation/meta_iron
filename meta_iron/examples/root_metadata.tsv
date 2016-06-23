@@ -1,0 +1,19 @@
+	value	type	label	units	Index	max	min	max_len	allowed_values	description
+"repo version"	v0.1.a1	version	"Repository Version"							"Version string for this repository."
+repo_name	"Legume Federation"	string	"Repository Name"					10		"Name for this repository."
+repo_URL	http://legumefederation.org/ark:/NAAN/NAME/	URL	"Repository URL"							"Prefix for retrieval."
+repo_code	LegFed	string	"Repository Code"					8		"Code for this repository, use with a slash for retrieval URL."
+object_id	ffffffv0	NOID	"Object ID"							"Nice Object ID for file naming and retrival URL."
+parent		NOID	"Parent Object"							"List of parent object Ids, may be more than one."
+children		NOID_list	"Child Objects"							"List of registered child objects."
+genome_size		float	description	Mbp			0			"Approximate genome size."
+assembly_size		integer	"Assembly Size"	bp			0			"Number of bases in assembly."
+some_value		float	"Some Value"	Geronimos^3	T	1	0			"Range of float values."
+bool_value		boolean								"T/F, True/False, 1/0 all work"
+untyped_value										"No type, will default to string."
+restricted_int		integer							1,2,3,4	"Integer choices."
+restricted_str		string							"yes, no, maybe"	"Discrete list of choices."
+some_str_list		string_list								
+some_int_list		integer_list								
+a_bool_list		boolean_list								
+floaties		float_list								

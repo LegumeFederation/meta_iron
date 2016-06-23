@@ -12,8 +12,8 @@ from .common import *
 _ctx = click.get_current_context
 
 @cli.command()
-@click.argument('nodetype', type=str, default='')
-def init_node_metadata(dir):
+@click.argument('directorytype', type=str, default='')
+def init_directory_metadata(dir):
     '''Initialize a metadata file.
 
     :param dir: Optional directory in which to initialize the file.
@@ -21,23 +21,54 @@ def init_node_metadata(dir):
     will be used.  If this argument is '.', then the current working
     directory will be used.  This argument accepts tilde expansions.
     '''
-    global metadata_obj
-    metadata_obj.write_metadata_dict(nodetype, metadata_dict={})
+    metadata_obj = get_user_context_obj()['metadata_obj']
+    metadata_obj.write_metadata_dict(directorytype, metadata_dict={})
+
+
 
 @cli.command()
-def show_node_metadata():
-    '''Prints location and contents of node metadata file.
+def show_directory_metadata():
+    '''Prints contents of directory metadata file.
 
         Example:
-            meta_iron -v show_metadata
+            meta_iron -v show_directory_metadata
     '''
-    global  metadata_obj
-
-    if metadata_obj.metadata_dict == {}:
-        logger.info('No metadata file was found.')
+    metadata_obj = get_user_context_obj()['metadata_obj']
+    if not metadata_obj.metadata_found:
+        logger.info('No metadata  was found, use init_directory_metadata first')
     else:
-        logger.info('metadata file path is "%s".', metadata_obj.path)
-        for key in metadata_obj.metadata_dict.keys():
-            logger.info('  %s: %s', key, metadata_obj.metadata_dict[key])
+        logger.info('Metadata at this directory:')
+        logger.info(metadata_obj.format_metadata(metadata_obj.directory_metadata))
+        logger.info('\n')
 
 
+@cli.command()
+def show_flattened_directory_metadata():
+    '''Prints contents of flattened metadata.
+
+        Example:
+            meta_iron -v show_flattened_directory_metadata
+    '''
+    metadata_obj = get_user_context_obj()['metadata_obj']
+    if not metadata_obj.metadata_found:
+        logger.info('No metadata  was found, use init_directory_metadata first')
+    else:
+        logger.info('Metadata at this directory:')
+        logger.info(metadata_obj.format_metadata(metadata_obj.metadata, show_source=True))
+        logger.info('\n')
+
+
+@cli.command()
+def write_flattened_directory_metadata():
+    '''Writes metadata file.
+
+        Example:
+            meta_iron -v write_flattened_directory_metadata
+    '''
+    metadata_obj = get_user_context_obj()['metadata_obj']
+    if not metadata_obj.metadata_found:
+        logger.info('No metadata  was found, use init_directory_metadata first')
+    else:
+        logger.info('Metadata at this directory:')
+        logger.info(metadata_obj.format_metadata(metadata_obj.metadata, show_source=True))
+        logger.info('\n')

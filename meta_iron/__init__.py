@@ -242,7 +242,6 @@ def show_metadata():
     '''Prints metadata from the current context.
     '''
     metadata_obj = get_user_context_obj()['metadata_obj']
-    logger.info('User context object')
     logger.info(metadata_obj)
 
 

@@ -1,0 +1,4 @@
+include meta_iron/examples/README.txt
+include meta_iron/examples/root_metadata.tsv
+include meta_iron/examples/test1/node_metadata.tsv
+include meta_iron/examples/test1/dir2/node_metadata.tsv
