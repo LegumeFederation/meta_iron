@@ -37,8 +37,8 @@ VERSION = __version__
 STARTTIME = datetime.now()
 ROOT_METADATA_FILE_ENVVAR = 'META_IRON_ROOT_METADATA_FILE_PATH'
 
-ROOT_METADATA_FILE_PATTERN = '*root_metadata*.tsv'
-NODE_METADATA_FILE_PATTERN = '*directory_metadata*.tsv'
+ROOT_METADATA_FILE_PATTERN = '*root_metadata.tsv'
+NODE_METADATA_FILE_PATTERN = '*node_metadata.tsv'
 #
 # Every root or directory metadata file will have these attributes set at creation time.
 #
@@ -120,6 +120,26 @@ FILE_TYPES = {'assembly': {'assembly_size', 0
                            }
               }
 #
+# Helper functions
+#
+def to_identifier(s):
+    '''Check if valid identifier.
+    :param s:
+    :return: s if valid
+    '''
+    if not s.isidentifier():
+        logger.warning('name "%s" is not a valid identifier, skipping', s)
+        raise ValueError
+    else:
+        return s.lower()
+
+def to_value(s):
+
+#
+#
+#
+ATTRIBUTE_TYPE_DICT = {'name': is_identifier}
+#
 # global logger object
 #
 logger = logging.getLogger('meta_iron')
@@ -134,7 +154,7 @@ class HierarchicalMetadataObject(object):
         :name: metadata filename.
         :path: metadata filepath (absolute).
     '''
-    def __init__(self, metadata_dir=None, name='directory_metadata.yaml'):
+    def __init__(self, metadata_dir=None, name='node_metadata.tsv'):
         '''Initialize a directory metadata dictionary
 
         Reads a metadata file from a subdirectory of the
@@ -161,7 +181,7 @@ class HierarchicalMetadataObject(object):
         for path in self.path_list:
             with path.open('rt') as f:
                 try:
-                    self.directory_metadata = pd.read_csv(f,
+                    self.directory_metadata = self._read_metadata_file(f,
                                                      sep='\t',
                                                      index_col=0)
                 except:
@@ -177,9 +197,6 @@ class HierarchicalMetadataObject(object):
 
     def __str__(self):
         desc = 'Hierarchical Metadata object, version %s.\n' %VERSION
-        #desc += '%s\n'%self.metadata
-        #desc += 'meta%s\n'%self.metadata['meta']
-        #desc += '%s\n'%self.source
         if self.directory_depth == 1:
             level_plural = ''
         else:
@@ -187,8 +204,7 @@ class HierarchicalMetadataObject(object):
         # Files in path
         desc += 'Directory "%s" is %d level%s deep from root:\n' %(self.directory_dir,
                                                           self.directory_depth,
-                                                          level_plural,
-                                                          top_desc)
+                                                          level_plural)
         table_data = []
         for i, path in enumerate(self.path_list):
             table_data.append([i, path])
@@ -244,6 +260,10 @@ class HierarchicalMetadataObject(object):
             source_dict = source
         return dict_element, source_dict
 
+    def _read_metadata_file(self,fh, root=False):
+        return pd.read_csv(fh,
+                    sep='\t',
+                    index_col=0)
 
     def _check_for_metadata(self,
                             search_path='.',

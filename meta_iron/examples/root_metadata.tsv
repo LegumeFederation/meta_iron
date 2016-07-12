@@ -1,5 +1,5 @@
-	value	type	label	units	Index	max	min	max_len	allowed_values	description
-"repo version"	v0.1.a1	version	"Repository Version"							"Version string for this repository."
+name	value	type	label	units	index	max	min	max_len	allowed_values	description
+repo_version	v0.1.a1	version	"Repository Version"							"Version string for this repository."
 repo_name	"Legume Federation"	string	"Repository Name"					10		"Name for this repository."
 repo_URL	http://legumefederation.org/ark:/NAAN/NAME/	URL	"Repository URL"							"Prefix for retrieval."
 repo_code	LegFed	string	"Repository Code"					8		"Code for this repository, use with a slash for retrieval URL."
