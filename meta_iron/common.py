@@ -16,6 +16,9 @@ import collections
 import pandas as pd
 import click
 from tabulate import tabulate
+from distutils.util import strtobool
+from distutils.version import StrictVersion
+
 #
 # module version--kept in its own file for setup.py
 #
@@ -122,30 +125,87 @@ FILE_TYPES = {'assembly': {'assembly_size', 0
 #
 # Helper functions
 #
-def to_identifier(s):
-    '''Check if valid identifier.
-    :param s:
-    :return: s if valid
-    '''
-    if not s.isidentifier():
-        logger.warning('name "%s" is not a valid identifier, skipping', s)
-        raise ValueError
-    else:
-        return s.lower()
-
-def to_value(s):
 
 #
 #
 #
-ATTRIBUTE_TYPE_DICT = {'name': is_identifier}
-#
+ATTRIBUTE_TYPE_DICT = {'name': 'identifier',
+                       'value': 'value',
+                       'label': 'string',
+                       'units': 'units',
+                       'min': 'basetype',
+                       'max': 'basetype',
+                       'precision': 'integer',
+                       'width': 'integer',
+                       'allowed_values': 'basetype_list',
+                       'description': 'string'
+                       }
+
+
 # global logger object
 #
 logger = logging.getLogger('meta_iron')
 #
 # Class definitions begin here.
 #
+
+class MetadataTypes(object):
+    '''Defines types and type handling for metadata
+
+    '''
+    # The type dictionary contains mappings between
+    # type names and classes.  The classes must
+    # return an object for which __str__ is defined and
+    # which raises ValueError if an illegal value is
+    # input to the constructor.
+    #
+
+    def __init__(self):
+        METADATA_TYPE_DICT = {'string': str,
+                              'integer': int,
+                              'float': float,
+                              'boolean': strtobool,
+                              'version': self.version_init,
+                              'identifier': self.identifier_init,
+                              'units': self.units_init,
+                              'OID': None,
+                              'file': None,
+                              'directory': None,
+                              'URL': None,
+                              }dat
+
+    def version_init(self, s):
+        '''Chcek if valid version string, using distutils.StrictVersion
+
+        :param s:
+        :return:
+        '''
+        VersionChecker = StrictVersion()
+        VersionChecker.parse(s) # raises ValueError if no agreement
+        return s
+
+    def units_init(self, s):
+        return s
+
+    def identifier_init(self, s):
+        '''Check if valid identifier.
+        :param s:
+        :return: s if valid
+        '''
+        if not s.isidentifier():
+            raise ValueError
+        else:
+            return s.lower()
+
+
+    def from_string(self, s, data_type):
+        if data_type not in self.METADATA_TYPE_DICT:
+            raise ValueError
+        return self.METADATA_TYPE_DICT[data_type](s)
+
+metadata_types = MetadataTypes()
+
+
 class HierarchicalMetadataObject(object):
     '''Defines a hierarchical persistent metadata object
 
@@ -353,31 +413,3 @@ def get_user_context_obj():
     '''
     return click.get_current_context().obj
 
-def to_str(seq):
-    '''Decode bytestring if necessary.
-
-    :param seq: Input bytestring, string, or other sequence.
-    :return: String.
-    '''
-    if isinstance(seq, bytes):
-        value = seq.decode('utf-8')
-    elif isinstance(seq, str):
-        value = seq
-    else:
-        value = str(seq)
-    return value
-
-
-def to_bytes(seq):
-    '''Encode or convert string if necessary.
-
-    :param seq: Input string, bytestring, or other sequence.
-    :return: Bytestring.
-    '''
-    if isinstance(seq, str):
-        value = seq.encode('utf-8')
-    elif isinstance(seq, bytes):
-        value = seq
-    else:
-        value = bytes(seq)
-    return value

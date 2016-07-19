@@ -51,7 +51,9 @@ setup(
     install_requires=['click>=5.0',
                       'click_plugins',
                       'tabulate',
-                      'pandas'],
+                      'pandas',
+                      'pint',
+                      'asteval'],
     entry_points={
                  'console_scripts':['meta_iron = meta_iron:cli']
                 },

@@ -103,5 +103,5 @@ Here is the scheme meta_iron uses to address the design goals:
 * meta_iron produces a flattened metadata file in the directory in which it is run
   called ``*metadata.tsv``, where the prefix follows the input ``*node_metadata.tsv`` name.
 
-.. _ISA-Tab: http://www.dcc.ac.uk/resources/metadata-standards/isa-tab_
-.. _TSV: http://www.iana.org/assignments/media-types/text/tab-separated-values_
+.. _ISA-Tab: http://www.dcc.ac.uk/resources/metadata-standards/isa-tab
+.. _TSV: http://www.iana.org/assignments/media-types/text/tab-separated-values
