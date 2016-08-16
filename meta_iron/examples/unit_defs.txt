@@ -1,0 +1,17 @@
+# Pint units definition file for genomics units.
+# Language: english
+# See https://pit.readthedocs.io for the format of this file.  
+
+base_pair = [] =  bp
+chromosome = [] = chr
+event = [] =  evt
+generation = [] =  gen
+genome = [] =   gn
+individual = [] = ind
+Morgan = [] =   M
+operational_taxonomic_unit = [] = OTU
+phylogenetic_unit = [] =  PU
+population = [] =  pop
+recombination = [] =   rec
+substitution = [] =  sub
+

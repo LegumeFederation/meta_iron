@@ -47,8 +47,14 @@ attributes    Metadata has `attributes <attributes.rst>`_ such as units, descrip
               may not have an effect on compilation, but still need to be passed to downstream
               programs and user interfaces.
 
+scriptable    Sometimes metadata is calculated from the data or from other metadata.  Providing
+              a means of returning the results of external programs and doing simple
+              string and arithmetic operations on those results can save a great deal of
+              work elsewhere.
+
 extensible    Developers and consumers should be able to easily add to or overwrite metadata
-              if they desire.
+              if they desire.  The ability to write problem-specific plugins is also valuable.
+
 ============= =================================================================================
 
 Issues meta_iron doesn't address
@@ -64,15 +70,14 @@ file-level granularity ``meta_iron`` is designed for directory-level operations 
                        (e.g., a file of separate latitude and longitude for
                        each file in a directory).  This decision due to the restrictions of
                        the tab-separated file format as it has commonly been used, in
-                       particular the uniqueness requirement of column 1 names.
+                       particular the uniqueness requirement of column 1 names.  However,
+                       there is some limited support for objects built in to
+                       ``meta_iron` via the ``.subname`` attribute mechanism.
 
 packaging              No concepts of file naming conventions, versioning, checksumming,
                        parent, children, etc.  This is structural metadata and outside
                        the scope of ``meta_iron``.
 
-metadata creation      No support to create and populate input metadata files.  This is highly
-                       domain- and project-specific, and has been already addressed by
-                       tools such as ISA-Tab_.
 ====================== ========================================================================
 
 Inputs and Outputs

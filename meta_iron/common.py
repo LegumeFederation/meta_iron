@@ -5,20 +5,22 @@
 # library imports
 #
 import logging
-from datetime import datetime
-from pathlib import Path # python 3.4 or later
 import sys
 import os
-import collections
+import ast
+import json
+from datetime import datetime
+from pathlib import Path # python 3.4 or later
+from collections import OrderedDict, MutableMapping
+from distutils.util import strtobool
+from distutils.version import StrictVersion
 #
-# 3rd-party modules
+# 3rd-party module imports
 #
 import pandas as pd
 import click
 from tabulate import tabulate
-from distutils.util import strtobool
-from distutils.version import StrictVersion
-
+from pint import UnitRegistry
 #
 # module version--kept in its own file for setup.py
 #
@@ -127,52 +129,61 @@ FILE_TYPES = {'assembly': {'assembly_size', 0
 #
 
 #
-#
-#
-ATTRIBUTE_TYPE_DICT = {'name': 'identifier',
-                       'value': 'value',
-                       'label': 'string',
-                       'units': 'units',
-                       'min': 'basetype',
-                       'max': 'basetype',
-                       'precision': 'integer',
-                       'width': 'integer',
-                       'allowed_values': 'basetype_list',
-                       'description': 'string'
-                       }
-
-
 # global logger object
 #
 logger = logging.getLogger('meta_iron')
 #
 # Class definitions begin here.
 #
+class JSONOrderedDict(OrderedDict):
+    '''An OrderedDict with JSON string output format
+    '''
+    def __str__(self):
+        return json.dumps(d)
+
+class OrderedDictionaryParser(ast.NodeVisitor):
+    def visit_Dict(self,node):
+        keys,values = node.keys,node.values
+        keys = [n.s for n in node.keys]
+        values = [n.s for n in node.values]
+        self.ordered_dictionary = JSONOrderedDict(zip(keys,values))
 
 class MetadataTypes(object):
     '''Defines types and type handling for metadata
 
     '''
     # The type dictionary contains mappings between
-    # type names and classes.  The classes must
+    # type names and class constructors.  The constructors must
     # return an object for which __str__ is defined and
     # which raises ValueError if an illegal value is
     # input to the constructor.
     #
+    class StringType(object):
+        def __init__(self, s):
+            self.name = 'stringtalm78wa' \
+                        ''
+            return str(s)
 
     def __init__(self):
-        METADATA_TYPE_DICT = {'string': str,
-                              'integer': int,
+        self.string = 'string'
+        self.integer = 'integer'
+        METADATA_TYPE_DICT = {self.string: str,
+                              self.integer: int,
                               'float': float,
                               'boolean': strtobool,
+                              'list': self.list_init,
+                              'dictionary': self.dictionary_init,
                               'version': self.version_init,
                               'identifier': self.identifier_init,
                               'units': self.units_init,
-                              'OID': None,
-                              'file': None,
-                              'directory': None,
-                              'URL': None,
-                              }dat
+                              'OID': self.OID_init,
+                              'file': self.file_init,
+                              'directory': self.directory_init,
+                              'URL': self.URL_init
+                              }
+        self.dict_parser = OrderedDictionaryParser()
+        self.unit_registry = UnitRegistry()
+        #self.unit_registry.load_definitions(unitsfile)
 
     def version_init(self, s):
         '''Chcek if valid version string, using distutils.StrictVersion
@@ -185,9 +196,34 @@ class MetadataTypes(object):
         return s
 
     def units_init(self, s):
+        try:
+            self.unit_registry(s)
+        except UndefinedUnitError:
+            raise ValueError
         return s
 
+    def OID_init(self, s):
+        pass
+
+    def URL_init(self, s):
+        pass
+
+    def file_init(self, s):
+        pass
+
+    def directory_init(self, s):
+        pass
+
+    def list_init(self, s):
+        return list(ast.literal_eval(s))
+
+
+    def dictionary_init(self, s):
+        return self.dict_parser.visit(ast.parse(s)).ordered_dictionary
+
+
     def identifier_init(self, s):
+
         '''Check if valid identifier.
         :param s:
         :return: s if valid
@@ -203,7 +239,23 @@ class MetadataTypes(object):
             raise ValueError
         return self.METADATA_TYPE_DICT[data_type](s)
 
+
 metadata_types = MetadataTypes()
+
+ATTRIBUTE_TYPE_DICT = {'name': 'identifier',
+                       'value': 'value',
+                       'label': metadata_types.string,
+                       'units': 'units',
+                       'min': 'basetype',
+                       'max': 'basetype',
+                       'precision': metadata_types.integer,
+                       'width': metadata_types.integer,
+                       'allowed_values': 'basetype_list',
+                       'description': metadata_types.string,
+                       'notes': metadata_types.string,
+                       'evaluate': 'boolean',
+                       'append': 'boolean'
+                       }
 
 
 class HierarchicalMetadataObject(object):
@@ -304,7 +356,7 @@ class HierarchicalMetadataObject(object):
                            possible_map,
                            source_dict,
                            source):
-        if isinstance(possible_map, collections.MutableMapping):
+        if isinstance(possible_map, MutableMapping):
             for k, v in possible_map.items():
                 if k not in dict_element:
                     dict_element[k] = {}

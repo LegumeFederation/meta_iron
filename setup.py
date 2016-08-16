@@ -53,7 +53,9 @@ setup(
                       'tabulate',
                       'pandas',
                       'pint',
-                      'asteval'],
+                      'asteval',
+                      'pytest'
+                      ],
     entry_points={
                  'console_scripts':['meta_iron = meta_iron:cli']
                 },
