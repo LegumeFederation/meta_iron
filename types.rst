@@ -10,7 +10,8 @@ these will result in a fatal error.
 ============== ================================================================================
 Type           Description
 ============== ================================================================================
-string         A Unicode string value encoded as UTF-8.
+string         A Unicode string value, encoded using ``UTF-8`` unless otherwise specified by
+               the ``encoding`` attribute.
 
 integer        An integer value.   Internal representation is ``BigInt`` and not limited in
                size.
@@ -44,9 +45,13 @@ identifier     A valid identifier (as determined by `python identifiers
 units          A string that is interpretable by `Pint <https://pint.readthedocs.io/en/0.7.2/>`_
                as a valid unit.
 
-date           An ISO date field.
+date           An ISO 8601 date field, e,g, 2916-09-14T13:06:30Z.  Dates are one of the
+               trickiest problems with metadata
 
-OID            A string that is a valid Object ID, e.g. ``LegFed000124v2.2``.
+GML            A Geographic Markup Language field.
+
+OID            A string that is a valid Object ID, e.g. ``LegFed000124v2.2``.  OIDs have
+               attributes ``.prefix``, ``.accession``, and ``.version``.
 
 file           A string that is a valid path to a file relative to the current directory
                e.g., ``subdir/README.txt``.  Absolute paths are not allowed.

@@ -1,4 +1,5 @@
 #!//usr/bin/env python3
+# -*- coding: utf-8 -*-
 #
 #  filesize.py -- returns a dictionary of file attributes.
 #

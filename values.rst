@@ -9,8 +9,8 @@ a warning being issued and the last value
 being used.  Empty value strings will result in the value becoming undefined, if
 previously defined.
 
-Values are encoded as a Unicode strings. All input and output metadata files are required
-to use the ``UTF-8`` encoding, but other files may use other encodings.
+Values are encoded as a Unicode strings. The default encoding used is ``UTF-8``, unless
+overridden by an ``.encoding.txt`` file or an ``encoding`` attribute.
 
 Input is checked to see if it passes type, bounds, allowed value, and path
 existence checking.  Failure of any of these checks produces a fatal error.
@@ -37,9 +37,9 @@ have been defined up to that point, plus additional internal values:
 ============== =============
 Symbol         Value
 ============== =============
-date           The localized date string.
+date           The date in ISO 8601 format.
 
-time           The local time in ``HH:MM:SS`` format.
+time           The date and time (Zulu) in ISO 8601 format.
 
 node           Name of the computer on which ``meta_iron`` was run.
 
@@ -62,6 +62,29 @@ self           Current metadata item name.
 
 self.attribute Every `attribute <attributes.rst>`_ that is defined, including
                ``self.value`` are available for evaluation.
+
+prefix         Global prefix for the data store.
+
+last_accession An integer value stored in the root metadata file.  This will
+               be incremented to guarantee a unique value.  The ``mint_accession``
+               command will cause this value to be stored in the ``accession``
+               value in the current directory and the ``last_accession`` number
+               will be incremented.
+
+accession      The accession number of the most recent metadata.
+
+version        A value of type ``version`` set by the ``set_version`` command.  This is
+               specific to the directory and stored there.
+
+OID            A value of type ``OID`` that is the current Object ID, obtained by
+               concatenating ``[prefix, accession, 'v', version]``, e.g.,
+               ``LegFed000124v2.2``.  The OID is used by the ``prefix_OID``
+               ``update_OID``. and ``register_directory`` commands.
+
+parent_OID     OID of parent, may be more than one directory level up.
+
+child_OIDs     List of OID's of registered children.  Not all subdirectories
+               may be registered.
 
 ============== =============
 
