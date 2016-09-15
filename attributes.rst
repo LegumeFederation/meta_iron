@@ -24,6 +24,8 @@ units           A units string, e.g. ``signatures/Mbp**2``.
 
 min             Minimum value, produces an error if exceeded.
 
+==============  ================================================================================
+
 max             Maximum value, produces an error if exceeded.
 
 precision       Number of digits beyond the decimal point for output of ``float`` types.
