@@ -24,8 +24,6 @@ units           A units string, e.g. ``signatures/Mbp**2``.
 
 min             Minimum value, produces an error if exceeded.
 
-==============  ================================================================================
-
 max             Maximum value, produces an error if exceeded.
 
 precision       Number of digits beyond the decimal point for output of ``float`` types.
@@ -43,6 +41,7 @@ evaluate        If ``True``, then ``value`` is derived from evaluating a Python 
                 along to flattened output, since they only have meaning to ``meta_iron``.  Only
                 one of ``evaluate`` and ``execute`` may be true or an error will result.
 
+==============  ================================================================================
 execute         If non-null then metadata is derived at the ``execute`` command from
                 from running an external executable derived from evaluating the list expression defined
                 in this attribute and parsing a dictionary of returned results.  The expression
