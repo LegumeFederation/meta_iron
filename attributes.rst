@@ -6,7 +6,6 @@ Columns other than the first column are for attributes.
 attribute identifier, but the following attributes require built-in parsing and handling and
 are always defined:
 
-
 ============== ================================================================================
 Attribute      Description
 ============== ================================================================================
@@ -62,15 +61,15 @@ encoding       Encoding used for a string value.  Note that this applies only to
 output         If ``True``, this value will not appear in output files.  Useful for internal-only
                metadata.  Not exported.
 
+final          If ``True``, attempting to redefine this value will produce an error.
+
+prototype      If ``True``, the name is a globbable pattern to be be used by the ``discover``
+               command.
+
 defined_by     The label of the ``execute`` command that was responsible for the definition.
                Not exported.
-
-defined_at     This is an internal attribute that shows the directory level at which the
-               value was defined.  This value is not directly settable and is not exported
-               except in diagnostic output of ``meta_iron``.
-
 ============== ================================================================================
 
-Each of these attributes corresponds to a potential column in metadata files.  The order of columns in metadata files
-beyond the first column (which must be the name) is not important, and not al l attributes need be present.
+Each of these attributes corresponds to a column in metadata files.  The order of columns in metadata files
+beyond the first column (which must be the name) is not important, and not all attributes need be present.
 Attributes not defined here are simply passed along as string values without verification.

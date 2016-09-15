@@ -1,8 +1,8 @@
 Flatten and smooth descriptive metadata
 =======================================
 
-``meta_iron`` is a scriptable tool that works with hierarchical descriptive metadata by creating, reading,
- and writing tab-separated files.
+meta_iron is a scriptable tool that creates, reads,and writes hierarchical descriptive metadata
+
 
 What is descriptive metadata?
 -----------------------------
@@ -58,7 +58,7 @@ Scriptable     Sometimes metadata is calculated from the data or from other meta
                string and arithmetic operations on those results can save a great deal of
                work elsewhere.
 
-Prototypeable  Much metadata works on following a fixed pattern of file names.  When these file
+Discoverable   Much metadata works on following a fixed pattern of file names.  When these file
                name patterns are combined with scriptability it lets much of metadata generation
                to be automated and consistent.
 
@@ -87,9 +87,9 @@ Horizontal Metadata    Metadata is sometimes organized vertically with respect t
                        method of organization, the second method has some advantages such as
                        easy conversion to column/vector processing.
 
-Packaging              No concepts of file naming conventions, versioning, checksumming,
+Packaging              There is only limited support for file naming, versioning, checksumming,
                        parent, children, etc.  This is structural metadata and outside
-                       the scope of ``meta_iron``.
+                       the main scope of ``meta_iron``.
 
 ====================== ========================================================================
 
@@ -107,21 +107,25 @@ For rows after the first, the contents of the first column of each input file de
 way that ``meta_iron`` interprets the remainder of the row.  Here are the possibilities
 in order of testing:
 
-Definition Type Expression                    Interpretation
-=============== ============================= ===========================================================
-Comment         ``^#*``.                      When the line begins with a ``#`` character, it is treated
-                                              as a comment.  The rest of the row will be skipped.
-                                              Comments are not output.
+=============== ===========================================================
+Definition Type Interpretation
+=============== ===========================================================
+Comment         When the line begins with a ``#`` character, it is treated
+                as a comment.  The rest of the row will be skipped.
+                Comments are not output.
 
-Metadata        ``[a-zA-Z_][a-zA-Z0-9_]*``    Identifiers must not include whitespaces or symbols such
-                                              as ``+`` or ``-``.  Defines metadata value or metadata
-                                              attributes or both.
+Metadata        The first column is treated as a key in a dictionary.
+                You can use any characters you wish, including whitespace or
+                ``+`` or ``-``, but these are best avoided because of
+                assumptions that downstream programs may make.
 
-Attribute       ``^.[a-zA-Z_][a-zA-Z0-9_]*``  Defines an attibute or attributes of attributes.
+Attribute       When the line begins with a ``.`` character, it
+                defines an attibute or attributes of attributes.
+`
+Prototype       If the ``prototype`` attribute is set, the name is treated
+                as a pattern for filename discovery.
 
-Prototype       Valid regex                   Defines a prototype pattern to be used.
-
-=============== ============================= ===========================================================
+=============== ===========================================================
 
 
 * There is a required ``*root_metadata.tsv`` file that defines the root of the directory
