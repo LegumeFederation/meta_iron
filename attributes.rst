@@ -41,15 +41,12 @@ evaluate        If ``True``, then ``value`` is derived from evaluating a Python 
                 along to flattened output, since they only have meaning to ``meta_iron``.  Only
                 one of ``evaluate`` and ``execute`` may be true or an error will result.
 
-==============  ================================================================================
 execute         If non-null then metadata is derived at the ``execute`` command from
-                from running an external executable derived from evaluating the list expression defined
-                in this attribute and parsing a dictionary of returned results.  The expression
-                is evaluated last, after ``value`` may be defined.  All items returned in the
-                dictionary will be defined in the current directory's metadata file.  Not exported.
-                Obviously this mechanism is not safe for untrusted
-                input files, so the ``--execute`` global switch must be used.  Only one of
-                ``evaluate`` and ``execute`` may be true or an error will result.
+                from running an external executable derived from evaluating the list expression
+                defined
+                in this attribute and parsing a dictionary of returned results. All items
+                returned in the
+                dictionary will be defined in the current directory's metadata file.
 
 append          If ``True``, will append to rather than override previous definitions of values
                 for metadata of sequence type (``string``, ``list``, or ``dictionary``).
