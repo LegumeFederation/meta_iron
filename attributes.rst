@@ -1,4 +1,4 @@
-Metadata Values and Attributes
+Metadata Attributes
 ===================
 
 Columns other than the first column are for attributes.
@@ -9,6 +9,7 @@ are always defined:
 ============== ================================================================================
 Attribute      Description
 ============== ================================================================================
+
 value          Value or value expression to be associated with ``name``.
                For more discussion of value on input and output see the
                `values document <values.rst>`_.
@@ -20,7 +21,7 @@ default        The default value.
 label          A short printable label with caps, e.g. ``Genome Size``.  Required for
                definitions with ``execute`` attribute, but not required to be unique.
 
-units          A units string, e.g. ``signatures/Mbp**2``,
+units          A units string, e.g. ``signatures/Mbp**2``.
 
 min            Minimum value, produces an error if exceeded.
 
@@ -66,8 +67,9 @@ final          If ``True``, attempting to redefine this value will produce an er
 prototype      If ``True``, the name is a globbable pattern to be be used by the ``discover``
                command.
 
-defined_by     The label of the ``execute`` command that was responsible for the definition.
+defined_by     The name of the ``execute`` command that was responsible for the definition.
                Not exported.
+
 ============== ================================================================================
 
 Each of these attributes corresponds to a column in metadata files.  The order of columns in metadata files

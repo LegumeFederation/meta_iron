@@ -108,7 +108,7 @@ way that ``meta_iron`` interprets the remainder of the row.  Here are the possib
 in order of testing:
 
 =============== ===========================================================
-Definition Type Interpretation
+Definition      Interpretation
 =============== ===========================================================
 Comment         When the line begins with a ``#`` character, it is treated
                 as a comment.  The rest of the row will be skipped.
@@ -121,9 +121,9 @@ Metadata        The first column is treated as a key in a dictionary.
 
 Attribute       When the line begins with a ``.`` character, it
                 defines an attibute or attributes of attributes.
-`
+
 Prototype       If the ``prototype`` attribute is set, the name is treated
-                as a pattern for filename discovery.
+                as a pattern for file/directory discovery.
 
 =============== ===========================================================
 
