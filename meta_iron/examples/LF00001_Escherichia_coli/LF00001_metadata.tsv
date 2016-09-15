@@ -1,0 +1,10 @@
+#UTF-8	value	uncertainty
+prefix	LF		
+accession	00001		
+version			
+OID	LF00001		
+parent_OID	LF00000		
+repo_name	Legume Federation		
+repo_URL	http://legumefederation.org/		
+taxon	[root,Escherichia coli]		
+genome_size	5.0E6	0.5E6	
